@@ -98,7 +98,19 @@ func (ctrl *LocationController) CreateLocation(c *gin.Context) {
 		return
 	}
 
-	userID := c.GetUint("userID")
+	// Get userID from context
+	userIDInterface, exists := c.Get("userID")
+	if !exists {
+		utils.ErrorResponse(c, http.StatusUnauthorized, "User not authenticated", nil)
+		return
+	}
+
+	userID, ok := userIDInterface.(uint)
+	if !ok {
+		utils.ErrorResponse(c, http.StatusInternalServerError, "Invalid user ID type", nil)
+		return
+	}
+
 	location, err := ctrl.locationService.CreateLocation(&req, userID)
 	if err != nil {
 		utils.ErrorResponse(c, http.StatusInternalServerError, "Failed to create location", err.Error())
